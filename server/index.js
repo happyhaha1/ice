@@ -1,5 +1,7 @@
 import Koa from 'koa'
 import { Nuxt, Builder } from 'nuxt'
+import { resolve } from 'path'
+import R from 'ramda'
 
 const app = new Koa()
 const host = process.env.HOST || '127.0.0.1'
@@ -7,10 +9,20 @@ const port = process.env.PORT || 3000
 
 // Import and Set Nuxt.js options
 let config = require('../nuxt.config.js')
-config.dev = !(app.env === 'production')
+config.dev = !(process.env === 'production')
+const r = path => resolve(__dirname, path)
+const MIDDLEWARE = ['router']
 
 // Instantiate nuxt.js
 const nuxt = new Nuxt(config)
+
+const useMiddleware = (app) => {
+  return R.map(R.compose(
+    R.map(i => i(app)),
+    require,
+    i => `${r('./middleware')}/${i}`)
+  )
+}
 
 // Build in development
 if (config.dev) {
@@ -20,7 +32,7 @@ if (config.dev) {
     process.exit(1)
   })
 }
-
+useMiddleware(app)(MIDDLEWARE)
 app.use(ctx => {
   ctx.status = 200 // koa defaults to 404 when it sees that status is unset
 

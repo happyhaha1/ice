@@ -3,8 +3,8 @@ const r = path => resolve(__dirname, path)
 
 require('babel-core/register')({
   'presets': [
-    'stage-3',
-    'latest-node'
+    'stage-0',
+    'es2015'
   ]
 })
 
